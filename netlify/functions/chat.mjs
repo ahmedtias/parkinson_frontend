@@ -151,7 +151,7 @@ export default async (req, context) => {
   if (!key) return json({ error: "not_configured" }, 503);
 
   const contents = buildContents(body.history, message);
-  const models = [...new Set([getPreferredModel(), "gemini-flash-latest", "gemini-2.5-flash", "gemini-2.0-flash"].filter(Boolean))];
+  const models = [...new Set([getPreferredModel(), "gemini-1.5-flash", "gemini-1.5-pro"].filter(Boolean))];
 
   let lastIssue = "unavailable";
 
