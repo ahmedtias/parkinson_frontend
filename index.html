@@ -303,6 +303,16 @@ dialog .actions{margin-top:20px;justify-content:flex-end}
   .chat{right:10px;bottom:80px}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.chips{max-height:128px;overflow:auto}
+.chips button.more{border-style:dashed;color:var(--acc1);font-weight:700}
+.cmpcard{max-width:780px;margin:18px auto 0;text-align:left}
+.cmpsum{font-size:13px;margin:12px 0 0;color:var(--ink)}
+td.pos-in{color:var(--muted)}
+td.pos-out{color:var(--warm);font-weight:700}
+.demonote{max-width:780px;margin:18px auto 0;text-align:center;font-size:13px}
+.cmpcard table{min-width:0}
+.cmpcard th,.cmpcard td{white-space:normal;padding:10px 8px}
 </style>
 </head>
 <body>
@@ -452,8 +462,19 @@ dialog .actions{margin-top:20px;justify-content:flex-end}
           <button class="btn ghost" id="backTest" data-i18n="btn_back_test">Back to test</button>
           <button class="btn primary" id="toDetails" data-i18n="btn_view_details">View sensor details</button>
         </div>
-        <p class="muted" style="margin:20px auto 0;font-size:12px;max-width:520px" data-i18n="res_note"></p>
       </div>
+      <div class="card cmpcard" id="cmpCard" hidden>
+        <h3 data-i18n="cmp_h">Pressure comparison (FSR)</h3>
+        <p class="muted" style="font-size:12.5px;margin:4px 0 6px" data-i18n="cmp_p"></p>
+        <div class="chartbox"><canvas id="chFsrCmp"></canvas></div>
+        <p class="cmpsum" id="cmpSum"></p>
+        <div class="tablewrap"><table><thead><tr>
+          <th data-i18n="cmp_th_measure">Measure</th><th data-i18n="cmp_th_you">This test</th><th data-i18n="cmp_th_ref">Healthy (typical)</th>
+          <th data-i18n="cmp_th_range">Healthy range</th><th data-i18n="cmp_th_diff">Difference</th><th data-i18n="cmp_th_pos">Position</th>
+        </tr></thead><tbody id="cmpRows"></tbody></table></div>
+        <p class="muted" style="font-size:12px;margin:10px 0 0" id="cmpNote"></p>
+      </div>
+      <div class="notice demonote" id="demoNote" data-i18n="res_demo" hidden></div>
     </section>
 
     <!-- ================= DETAILS ================= -->
@@ -647,6 +668,7 @@ en:{
  chat_err_generic:'The assistant is not reachable right now. Please try again in a moment.',
  chat_err_quota:'The free assistant limit is reached for now. Please try again in a few minutes.',
  chat_err_conf:'The assistant is not set up yet (the server key is missing).',
+ chat_err_key:'The assistant key was rejected by Google. Check GEMINI_API_KEY in Netlify.',
  chat_err_rate:'You are sending messages too fast. Please wait a little.',
  chat_offline_note:'Offline answer',
  q1:'What is Parkinson\'s disease?',q2:'What are common early symptoms?',q3:'What is a spiral drawing test?',q4:'How do I use this page?',q5:'What do the results mean?',
@@ -654,7 +676,65 @@ en:{
  a2:'Common early signs include a resting tremor, slower movement, stiffness, smaller handwriting, a softer voice, less facial expression and reduced arm swing when walking. These can have other causes, so only a doctor can tell what they mean.',
  a3:'Drawing a spiral shows how steady and smooth hand movement is. People with Parkinson\'s may draw spirals that are tremulous, uneven or smaller. Here the pen\'s motion sensor and pressure sensor are recorded while you draw.',
  a4:'Pick a participant, make sure the pen shows Ready, press Start, draw the spiral, then press Stop. Wait for the summary, then open Result and Sensor Details.',
- a5:'The AI model compares the pen\'s motion data with patterns it learned from healthy and Parkinson\'s examples, and reports which group most samples resembled. It is a research summary, not a diagnosis.'
+ a5:'The AI model compares the pen\'s motion data with patterns it learned from healthy and Parkinson\'s examples, and reports which group most samples resembled. It is a research summary, not a diagnosis.',
+ cmp_h:"Pressure comparison (FSR)",
+ cmp_p:"This test's thumb pressure compared with the average of recorded healthy tests.",
+ cmp_th_measure:"Measure",
+ cmp_th_you:"This test",
+ cmp_th_ref:"Healthy (typical)",
+ cmp_th_range:"Healthy range",
+ cmp_th_diff:"Difference",
+ cmp_th_pos:"Position",
+ cmp_in:"Within range",
+ cmp_above:"Above range",
+ cmp_below:"Below range",
+ cmp_peak:"Peak",
+ cmp_low:"Lowest",
+ cmp_p2p:"Peak-to-peak",
+ cmp_mean:"Mean",
+ cmp_sd:"Variation (SD)",
+ cmp_rms:"RMS",
+ cmp_pps:"Pressure peaks per second",
+ cmp_sum:"{out} of {total} measures are outside the healthy range.",
+ cmp_nodata:"No pressure data for this test.",
+ cmp_note:"Healthy reference: {n} recorded healthy tests. \"Typical\" is their median and the range covers the middle 80% of those tests. Demonstration only.",
+ ref_label:"Healthy average (±1 SD)",
+ you_label:"This test",
+ ch_time:"Recording time (s)",
+ res_demo:"This is a demonstration, not an actual diagnostic result. The AI summary and the pressure comparison are for research and demo purposes only.",
+ chat_more:"More questions ▾",
+ chat_less:"Fewer ▴",
+ chat_try:"Offline, I can only answer the built-in questions. Tap one below.",
+ q6:"What causes Parkinson's disease?",
+ q7:"How is Parkinson's diagnosed?",
+ q8:"What treatments are available?",
+ q9:"What is a resting tremor?",
+ q10:"Can Parkinson's be cured?",
+ q11:"Is Parkinson's hereditary?",
+ q12:"Who gets Parkinson's, and at what age?",
+ q13:"Does exercise help?",
+ q14:"When should I see a doctor?",
+ q15:"Why does the pen use motion sensors?",
+ q16:"What is the pressure (FSR) graph?",
+ q17:"How accurate is this test?",
+ q18:"Can this page diagnose Parkinson's?",
+ q19:"The pen shows Offline. What do I do?",
+ q20:"What does Reset do?",
+ a6:"The exact cause is not fully known. Parkinson's develops when dopamine-producing cells in a part of the brain called the substantia nigra are gradually lost. Age, inherited gene changes and environmental factors are all thought to play a part, and for most people no single cause is found.",
+ a7:"There is no single blood test. A neurologist diagnoses Parkinson's from the history of symptoms and a physical examination of movement (tremor, stiffness, slowness). Brain scans or other tests are sometimes used to rule out other conditions. A sensor test like this one cannot replace that assessment.",
+ a8:"Medicines that raise or replace dopamine (such as levodopa) are the main treatment. Physiotherapy, regular exercise, speech and occupational therapy also help, and in selected people a surgery called deep brain stimulation may be considered. A neurologist decides the treatment for each person.",
+ a9:"A resting tremor appears when the muscles are relaxed — for example when the hand rests on the lap — and often eases when you move or hold something. It is a classic early sign of Parkinson's, typically about 4–6 shakes per second. Tremor during movement (for example when writing or holding a cup) is more often another condition, such as essential tremor. Only a doctor can tell them apart.",
+ a10:"There is no cure for Parkinson's at present, but treatment can control symptoms well for many years, and research is ongoing. Starting care early with a neurologist makes a real difference to daily life.",
+ a11:"Most cases are not directly inherited. A small share is linked to inherited gene changes, and having a close relative with Parkinson's raises the risk slightly, but most people with an affected relative never develop it.",
+ a12:"It usually begins after age 60, although some people are diagnosed before 50 (young-onset). It is somewhat more common in men than in women.",
+ a13:"Regular exercise such as brisk walking, cycling, dancing, tai chi and strength training can help balance, flexibility, mood and mobility in Parkinson's. A healthy diet, good sleep and staying socially active also help. Ask your doctor or a physiotherapist which activities suit you.",
+ a14:"Please see a doctor, ideally a neurologist, if you notice persistent tremor, stiffness, slowness, or changes in handwriting or walking. Note when the symptoms started and what makes them better or worse. This page cannot confirm or exclude Parkinson's.",
+ a15:"The pen contains a motion sensor (accelerometer and gyroscope) that records tiny shakes and rotations of the hand 20 times a second. The AI model looks at how much, and how irregularly, the pen moves in one-second blocks.",
+ a16:"The pressure sensor (FSR) measures how hard the thumb presses. The graph shows the average of recorded healthy tests as a light band, with your test drawn on top of it. The table compares peak, lowest, peak-to-peak, mean, variation (SD), RMS and pressure peaks per second. The AI model does not use pressure; it is shown for observation and demonstration.",
+ a17:"This is a research prototype trained on a limited set of recordings, so it can be wrong in both directions. Treat the result as a demonstration of the idea, not as a measurement to rely on for health decisions.",
+ a18:"No. This page cannot diagnose Parkinson's disease; only a doctor can, after a full examination. The result only says whether the pen's movement looked more like the healthy or the Parkinson's-like examples the model has seen.",
+ a19:"Check that the pen is powered on and connected to Wi-Fi, then wait about 30 seconds. Also make sure the server is running — the free server can take up to a minute to wake up after being idle.",
+ a20:"Reset clears the current test data on the server and the pen's summary so a new participant can start. Records already saved under participants are not affected."
 },
 bn:{
  brand_sub:'মুভমেন্ট অ্যাসেসমেন্ট',nav_overview:'ওভারভিউ',nav_test:'স্পাইরাল টেস্ট',nav_result:'ফলাফল',nav_details:'সেন্সর বিবরণ',nav_patients:'অংশগ্রহণকারী',
@@ -726,6 +806,7 @@ bn:{
  chat_err_generic:'সহায়ক এই মুহূর্তে পাওয়া যাচ্ছে না। একটু পরে আবার চেষ্টা করুন।',
  chat_err_quota:'ফ্রি সহায়কের সীমা আপাতত শেষ। কয়েক মিনিট পরে আবার চেষ্টা করুন।',
  chat_err_conf:'সহায়ক এখনো সেট করা হয়নি (সার্ভারের key নেই)।',
+ chat_err_key:'Google আপনার key গ্রহণ করেনি। Netlify-তে GEMINI_API_KEY ঠিক আছে কি না দেখুন।',
  chat_err_rate:'আপনি খুব দ্রুত বার্তা পাঠাচ্ছেন। একটু অপেক্ষা করুন।',
  chat_offline_note:'অফলাইন উত্তর',
  q1:'পারকিনসন রোগ কী?',q2:'শুরুর দিকের সাধারণ লক্ষণ কী?',q3:'স্পাইরাল ড্রয়িং টেস্ট কী?',q4:'এই পেজ কীভাবে ব্যবহার করব?',q5:'ফলাফলের মানে কী?',
@@ -733,7 +814,65 @@ bn:{
  a2:'শুরুর দিকের সাধারণ লক্ষণের মধ্যে আছে বিশ্রামের সময় হাতের কাঁপুনি, ধীর নড়াচড়া, শক্ত ভাব, হাতের লেখা ছোট হয়ে যাওয়া, নরম কণ্ঠস্বর, মুখের অভিব্যক্তি কমে যাওয়া এবং হাঁটার সময় হাত কম দোলানো। এগুলোর অন্য কারণও থাকতে পারে, তাই এর মানে ডাক্তারই বলতে পারেন।',
  a3:'স্পাইরাল আঁকলে বোঝা যায় হাতের নড়াচড়া কতটা স্থির ও মসৃণ। পারকিনসন আক্রান্তদের স্পাইরাল কাঁপা, অসমান বা ছোট হতে পারে। এখানে আঁকার সময় পেনের মোশন সেন্সর ও চাপ সেন্সরের ডেটা রেকর্ড হয়।',
  a4:'অংশগ্রহণকারী বাছুন, পেনের অবস্থা "প্রস্তুত" দেখুন, Start চাপুন, স্পাইরাল আঁকুন, তারপর Stop চাপুন। সারাংশের জন্য অপেক্ষা করে ফলাফল ও সেন্সর বিবরণ খুলুন।',
- a5:'এআই মডেল পেনের গতির ডেটাকে সুস্থ ও পারকিনসন উদাহরণ থেকে শেখা ধরনের সাথে মেলায় এবং বেশিরভাগ স্যাম্পল কোন গোষ্ঠীর মতো তা জানায়। এটি গবেষণার সারাংশ, রোগ নির্ণয় নয়।'
+ a5:'এআই মডেল পেনের গতির ডেটাকে সুস্থ ও পারকিনসন উদাহরণ থেকে শেখা ধরনের সাথে মেলায় এবং বেশিরভাগ স্যাম্পল কোন গোষ্ঠীর মতো তা জানায়। এটি গবেষণার সারাংশ, রোগ নির্ণয় নয়।',
+ cmp_h:"চাপের তুলনা (FSR)",
+ cmp_p:"এই টেস্টে বুড়ো আঙুলের চাপ, রেকর্ড করা সুস্থ টেস্টগুলোর গড়ের সাথে তুলনা।",
+ cmp_th_measure:"মাপ",
+ cmp_th_you:"এই টেস্ট",
+ cmp_th_ref:"সুস্থ (সাধারণ)",
+ cmp_th_range:"সুস্থের পরিসর",
+ cmp_th_diff:"পার্থক্য",
+ cmp_th_pos:"অবস্থান",
+ cmp_in:"পরিসরের মধ্যে",
+ cmp_above:"পরিসরের ওপরে",
+ cmp_below:"পরিসরের নিচে",
+ cmp_peak:"সর্বোচ্চ",
+ cmp_low:"সর্বনিম্ন",
+ cmp_p2p:"পিক-টু-পিক",
+ cmp_mean:"গড়",
+ cmp_sd:"ওঠানামা (SD)",
+ cmp_rms:"RMS",
+ cmp_pps:"প্রতি সেকেন্ডে চাপের পিক",
+ cmp_sum:"{total}টি মাপের মধ্যে {out}টি সুস্থের পরিসরের বাইরে।",
+ cmp_nodata:"এই টেস্টের চাপের ডেটা নেই।",
+ cmp_note:"সুস্থ রেফারেন্স: রেকর্ড করা {n}টি সুস্থ টেস্ট। \"সাধারণ\" মানে তাদের মধ্যমা (median), আর পরিসর ওই টেস্টগুলোর মাঝের ৮০% কভার করে। শুধুই ডেমো।",
+ ref_label:"সুস্থ গড় (±১ SD)",
+ you_label:"এই টেস্ট",
+ ch_time:"রেকর্ডিং সময় (সে.)",
+ res_demo:"এটি একটি ডেমো, প্রকৃত ডায়াগনস্টিক ফলাফল নয়। এআই সারাংশ ও চাপের তুলনা শুধুই গবেষণা ও প্রদর্শনের জন্য।",
+ chat_more:"আরও প্রশ্ন ▾",
+ chat_less:"কম দেখুন ▴",
+ chat_try:"অফলাইনে আমি শুধু তৈরি করা প্রশ্নের উত্তর দিতে পারি। নিচের একটি বেছে নিন।",
+ q6:"পারকিনসন রোগের কারণ কী?",
+ q7:"পারকিনসন কীভাবে নির্ণয় করা হয়?",
+ q8:"কী কী চিকিৎসা আছে?",
+ q9:"রেস্টিং ট্রেমর (বিশ্রামের কাঁপুনি) কী?",
+ q10:"পারকিনসন কি সারে?",
+ q11:"পারকিনসন কি বংশগত?",
+ q12:"কাদের পারকিনসন হয়, কত বয়সে?",
+ q13:"ব্যায়াম কি সাহায্য করে?",
+ q14:"কখন ডাক্তার দেখাব?",
+ q15:"পেনে মোশন সেন্সর কেন?",
+ q16:"চাপের (FSR) গ্রাফ কী?",
+ q17:"এই টেস্ট কতটা নির্ভুল?",
+ q18:"এই পেজ কি পারকিনসন নির্ণয় করতে পারে?",
+ q19:"পেন \"অফলাইন\" দেখাচ্ছে, কী করব?",
+ q20:"Reset কী করে?",
+ a6:"সঠিক কারণ পুরোপুরি জানা নেই। মস্তিষ্কের সাবস্ট্যানশিয়া নাইগ্রা নামের অংশে ডোপামিন তৈরিকারী কোষ ধীরে ধীরে কমে গেলে পারকিনসন হয়। বয়স, বংশগত জিনের পরিবর্তন ও পরিবেশগত কারণ — সবই ভূমিকা রাখে বলে ধারণা করা হয়; বেশিরভাগ মানুষের ক্ষেত্রে একটি নির্দিষ্ট কারণ পাওয়া যায় না।",
+ a7:"এর জন্য একটিমাত্র রক্তপরীক্ষা নেই। স্নায়ুরোগ বিশেষজ্ঞ লক্ষণের ইতিহাস ও নড়াচড়ার শারীরিক পরীক্ষা (কাঁপুনি, শক্ত ভাব, ধীরগতি) দেখে রোগ নির্ণয় করেন। অন্য রোগ বাদ দিতে কখনো ব্রেন স্ক্যান বা অন্য পরীক্ষা করা হয়। এই ধরনের সেন্সর টেস্ট সেই পরীক্ষার বিকল্প নয়।",
+ a8:"ডোপামিন বাড়ায় বা তার জায়গা নেয় এমন ওষুধ (যেমন লেভোডোপা) প্রধান চিকিৎসা। ফিজিওথেরাপি, নিয়মিত ব্যায়াম, স্পিচ ও অকুপেশনাল থেরাপিও সাহায্য করে, আর বাছাই করা কিছু রোগীর ক্ষেত্রে ডিপ ব্রেন স্টিমুলেশন নামের অস্ত্রোপচার বিবেচনা করা হয়। প্রত্যেকের চিকিৎসা স্নায়ুরোগ বিশেষজ্ঞ ঠিক করেন।",
+ a9:"রেস্টিং ট্রেমর বা বিশ্রামের কাঁপুনি হয় যখন পেশি শিথিল থাকে — যেমন কোলে হাত রাখা অবস্থায় — আর নড়াচড়া করলে বা কিছু ধরলে প্রায়ই কমে যায়। এটি পারকিনসনের একটি পরিচিত শুরুর লক্ষণ, সাধারণত সেকেন্ডে প্রায় ৪–৬ বার কাঁপে। নড়াচড়ার সময় কাঁপুনি (যেমন লেখার বা কাপ ধরার সময়) বেশি ক্ষেত্রে অন্য অবস্থা, যেমন এসেনশিয়াল ট্রেমর। কোনটা কী তা ডাক্তারই বলতে পারেন।",
+ a10:"বর্তমানে পারকিনসনের কোনো নিরাময় নেই, তবে চিকিৎসায় অনেক বছর ধরে লক্ষণ ভালোভাবে নিয়ন্ত্রণে রাখা যায়, আর গবেষণা চলছে। স্নায়ুরোগ বিশেষজ্ঞের কাছে আগে থেকে যত্ন শুরু করলে দৈনন্দিন জীবনে বড় পার্থক্য হয়।",
+ a11:"বেশিরভাগ ক্ষেত্রে এটি সরাসরি বংশগত নয়। অল্প কিছু ক্ষেত্র বংশগত জিনের পরিবর্তনের সাথে যুক্ত, আর ঘনিষ্ঠ আত্মীয়ের থাকলে ঝুঁকি সামান্য বাড়ে; তবে আত্মীয়ের থাকা বেশিরভাগ মানুষেরই শেষ পর্যন্ত রোগটি হয় না।",
+ a12:"সাধারণত ৬০ বছরের পর শুরু হয়, যদিও কারও কারও ৫০-এর আগেও ধরা পড়ে (ইয়াং-অনসেট)। নারীদের তুলনায় পুরুষদের মধ্যে কিছুটা বেশি দেখা যায়।",
+ a13:"দ্রুত হাঁটা, সাইকেল চালানো, নাচ, তাই চি ও শক্তি বাড়ানোর ব্যায়ামের মতো নিয়মিত ব্যায়াম ভারসাম্য, নমনীয়তা, মেজাজ ও চলাফেরায় সাহায্য করতে পারে। স্বাস্থ্যকর খাবার, ভালো ঘুম ও সামাজিকভাবে সক্রিয় থাকাও উপকারী। কোন ব্যায়াম আপনার জন্য ঠিক তা ডাক্তার বা ফিজিওথেরাপিস্টের কাছ থেকে জেনে নিন।",
+ a14:"স্থায়ী কাঁপুনি, শক্ত ভাব, ধীরগতি, বা হাতের লেখা ও হাঁটায় পরিবর্তন চোখে পড়লে ডাক্তারের কাছে যান, সম্ভব হলে স্নায়ুরোগ বিশেষজ্ঞের কাছে। লক্ষণ কবে শুরু হয়েছে এবং কীসে বাড়ে বা কমে তা লিখে রাখুন। এই পেজ পারকিনসন নিশ্চিত বা বাদ দিতে পারে না।",
+ a15:"পেনের ভেতরে একটি মোশন সেন্সর (অ্যাক্সিলারোমিটার ও জাইরোস্কোপ) আছে, যা হাতের ছোট কাঁপুনি ও ঘোরা সেকেন্ডে ২০ বার রেকর্ড করে। এআই মডেল এক সেকেন্ডের ব্লকে পেনটি কতটা এবং কতটা অনিয়মিতভাবে নড়ছে তা দেখে।",
+ a16:"চাপ সেন্সর (FSR) মাপে বুড়ো আঙুল কত জোরে চাপছে। গ্রাফে রেকর্ড করা সুস্থ টেস্টগুলোর গড় হালকা ব্যান্ড হিসেবে থাকে, তার ওপর আপনার টেস্ট আঁকা হয়। টেবিলে সর্বোচ্চ, সর্বনিম্ন, পিক-টু-পিক, গড়, ওঠানামা (SD), RMS ও সেকেন্ডে চাপের পিক তুলনা করা হয়। এআই মডেল চাপ ব্যবহার করে না; এটি পর্যবেক্ষণ ও প্রদর্শনের জন্য।",
+ a17:"এটি সীমিত রেকর্ডিংয়ে প্রশিক্ষিত একটি গবেষণা প্রোটোটাইপ, তাই দুই দিকেই ভুল হতে পারে। ফলাফলকে ধারণার প্রদর্শনী হিসেবে দেখুন, স্বাস্থ্য-সিদ্ধান্তের নির্ভরযোগ্য মাপ হিসেবে নয়।",
+ a18:"না। এই পেজ পারকিনসন রোগ নির্ণয় করতে পারে না; পুরো পরীক্ষার পর কেবল ডাক্তারই তা পারেন। ফলাফল শুধু বলে পেনের নড়াচড়া মডেলের দেখা সুস্থ না পারকিনসন-সদৃশ উদাহরণের মতো দেখাল।",
+ a19:"পেনে পাওয়ার আছে ও Wi-Fi-তে যুক্ত কি না দেখুন, তারপর প্রায় ৩০ সেকেন্ড অপেক্ষা করুন। সার্ভার চালু আছে কি না তাও দেখুন — ফ্রি সার্ভার কিছুক্ষণ অব্যবহৃত থাকলে জেগে উঠতে এক মিনিট পর্যন্ত লাগতে পারে।",
+ a20:"Reset সার্ভারে থাকা বর্তমান টেস্টের ডেটা ও পেনের সারাংশ মুছে দেয়, যাতে নতুন অংশগ্রহণকারী শুরু করতে পারেন। অংশগ্রহণকারীর নামে আগে সংরক্ষিত রেকর্ড অক্ষত থাকে।"
 }
 };
 
@@ -1131,7 +1270,8 @@ function buildCharts(){
   var c=seriesColors();
   charts.acc = mkChart('chAcc',['aX','aY','aZ'],c,false);
   charts.gyro= mkChart('chGyro',['gX','gY','gZ'],c,false);
-  charts.fsr = mkChart('chFsr',['FSR'],[cssv('--coral')],false);
+  charts.fsr = mkCmpChart('chFsr');
+  charts.cmp = mkCmpChart('chFsrCmp');
   charts.mini= mkChart('miniChart',['FSR'],[cssv('--acc2')],true);
 }
 function rebuildCharts(){
@@ -1144,6 +1284,87 @@ function downsample(arr,max){
   for(var i=0;i<arr.length;i+=step) out.push(arr[i]);
   if(out[out.length-1]!==arr[arr.length-1]) out.push(arr[arr.length-1]);
   return out;
+}
+/* ---------- Healthy FSR reference (from recorded healthy tests) ---------- */
+var FSR_REF = {"sampleSec":0.05,"step":4,"runs":21,"runsForStats":21,"mean":[36,38,37,43,55,74,82,75,72,83,94,95,92,102,109,117,124,122,122,119,109,100,98,101,102,108,103,107,104,94,96,108,109,107,102,94,83,76,70,70],"lo":[0,0,0,0,0,8,14,9,1,0,0,0,0,0,1,13,16,10,11,14,6,0,0,0,0,7,16,19,21,17,16,24,18,8,3,0,0,0,0,0],"hi":[94,94,88,101,118,139,150,141,144,167,187,196,195,209,217,221,233,234,233,224,212,203,200,208,212,208,190,196,186,171,175,192,201,206,202,189,169,157,153,154],"stats":{"peak":{"median":305,"p10":129,"p90":533},"low":{"median":0,"p10":0,"p90":0},"p2p":{"median":305,"p10":129,"p90":533},"mean":{"median":84.16875,"p10":23.05,"p90":146.63125},"sd":{"median":69.94480076689753,"p10":29.15032756629367,"p90":118.2113996194952},"rms":{"median":113.04553839050881,"p10":36.38673445700293,"p90":184.12090117637376},"pps":{"median":2.625,"p10":1.75,"p90":3.4615384615384617}}};
+// Shared FSR statistics (same code is pasted into the website).
+function fsrStats(v, sampleSec){
+  var n=v.length; if(n<5) return null;
+  var sum=0,mx=-Infinity,mn=Infinity,sq=0,i;
+  for(i=0;i<n;i++){ sum+=v[i]; if(v[i]>mx) mx=v[i]; if(v[i]<mn) mn=v[i]; sq+=v[i]*v[i]; }
+  var mean=sum/n, ss=0;
+  for(i=0;i<n;i++) ss+=(v[i]-mean)*(v[i]-mean);
+  var sd=Math.sqrt(ss/n), thr=mean+0.5*sd, peaks=0;
+  for(i=1;i<n-1;i++) if(v[i]>v[i-1] && v[i]>=v[i+1] && v[i]>thr) peaks++;
+  return {peak:mx, low:mn, p2p:mx-mn, mean:mean, sd:sd, rms:Math.sqrt(sq/n), pps:peaks/(n*sampleSec)};
+}
+
+function withAlpha(c,a){
+  try{
+    var x=document.createElement('canvas').getContext('2d'); x.fillStyle=c; var v=x.fillStyle;
+    if(v.charAt(0)==='#'){ var n=parseInt(v.slice(1),16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
+    var m=v.match(/rgba?\(([^)]+)\)/); if(m){ return 'rgba('+m[1].split(',').slice(0,3).join(',')+','+a+')'; }
+  }catch(e){}
+  return c;
+}
+function mkCmpChart(id){
+  if(typeof Chart==='undefined') return null;
+  var el=$(id); if(!el) return null;
+  var tick=cssv('--muted'), grid=cssv('--grid'), refC=cssv('--acc2'), liveC=cssv('--coral');
+  function ds(o){ return Object.assign({data:[],pointRadius:0,borderWidth:1.4,tension:.25,fill:false},o); }
+  return new Chart(el.getContext('2d'),{
+    type:'line',
+    data:{datasets:[
+      ds({label:'ref-hi',borderWidth:0,borderColor:'transparent',backgroundColor:'transparent'}),
+      ds({label:'ref-lo',borderWidth:0,borderColor:'transparent',backgroundColor:withAlpha(refC,0.2),fill:'-1'}),
+      ds({label:'',borderColor:withAlpha(refC,0.85),backgroundColor:withAlpha(refC,0.85),borderWidth:2}),
+      ds({label:'',borderColor:liveC,backgroundColor:liveC,borderWidth:1.6})
+    ]},
+    options:{
+      animation:false,responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'nearest',axis:'x',intersect:false},
+      plugins:{
+        legend:{labels:{color:tick,boxWidth:10,boxHeight:10,usePointStyle:true,filter:function(i){ return i.datasetIndex>=2; }}},
+        tooltip:{filter:function(i){ return i.datasetIndex>=2; }}
+      },
+      scales:{
+        x:{type:'linear',min:0,title:{display:true,text:'',color:tick},ticks:{color:tick,maxTicksLimit:8,callback:function(v){ return v+'s'; }},grid:{color:grid}},
+        y:{min:0,ticks:{color:tick,maxTicksLimit:6},grid:{color:grid}}
+      }
+    }
+  });
+}
+function fillCmp(ch){
+  if(!ch) return;
+  var d=ch.data.datasets, stepS=FSR_REF.step*FSR_REF.sampleSec, hi=[],lo=[],mn=[];
+  FSR_REF.mean.forEach(function(v,i){
+    var x=+(i*stepS).toFixed(2);
+    mn.push({x:x,y:v}); lo.push({x:x,y:FSR_REF.lo[i]}); hi.push({x:x,y:FSR_REF.hi[i]});
+  });
+  d[0].data=hi; d[1].data=lo; d[2].data=mn;
+  d[2].label=t('ref_label'); d[3].label=t('you_label');
+  var live=[];
+  S.samples.forEach(function(r,i){ if(r.fsr_raw!=null) live.push({x:+(i*FSR_REF.sampleSec).toFixed(2),y:r.fsr_raw}); });
+  d[3].data=downsample(live,700);
+  ch.options.scales.x.title.text=t('ch_time');
+  ch.update('none');
+}
+var CMP_ROWS=[['peak','cmp_peak',0],['low','cmp_low',0],['p2p','cmp_p2p',0],['mean','cmp_mean',0],['sd','cmp_sd',0],['rms','cmp_rms',0],['pps','cmp_pps',2]];
+function renderFsrCompare(){
+  var body=$('cmpRows'); if(!body) return;
+  var vals=S.samples.map(function(r){ return r.fsr_raw; }).filter(function(v){ return v!=null; });
+  var st = vals.length>=20 ? fsrStats(vals,FSR_REF.sampleSec) : null;
+  $('cmpNote').textContent=t('cmp_note',{n:FSR_REF.runs});
+  if(!st){ body.innerHTML='<tr><td colspan="6" style="color:var(--muted)">'+esc(t('cmp_nodata'))+'</td></tr>'; $('cmpSum').textContent=''; return; }
+  var out=0,total=0;
+  body.innerHTML=CMP_ROWS.map(function(row){
+    var k=row[0], ref=FSR_REF.stats[k], v=st[k], dg=row[2];
+    var diff = ref.median>0 ? (v-ref.median)/ref.median*100 : null;
+    var pos='in'; if(v>ref.p90) pos='above'; else if(v<ref.p10) pos='below';
+    if(k!=='low'){ total++; if(pos!=='in') out++; }
+    return '<tr><td>'+esc(t(row[1]))+'</td><td class="num"><b>'+fmt(v,dg)+'</b></td><td class="num">'+fmt(ref.median,dg)+'</td><td class="num">'+fmt(ref.p10,dg)+' – '+fmt(ref.p90,dg)+'</td><td class="num">'+(diff==null?'—':(diff>0?'+':'')+fmt(diff,0)+'%')+'</td><td class="'+(pos==='in'?'pos-in':'pos-out')+'">'+esc(t('cmp_'+pos))+'</td></tr>';
+  }).join('');
+  $('cmpSum').textContent=t('cmp_sum',{out:out,total:total});
 }
 function fillChart(ch,rows,keys){
   if(!ch) return;
@@ -1158,8 +1379,8 @@ function updateCharts(){
     var rows=downsample(S.samples,700);
     fillChart(charts.acc,rows,['aX','aY','aZ']);
     fillChart(charts.gyro,rows,['gX','gY','gZ']);
-    fillChart(charts.fsr,rows,['fsr_raw']);
   }
+  fillCmp(charts.fsr); fillCmp(charts.cmp);
   if(S.page==='test'){
     var win=S.samples.slice(-300);
     fillChart(charts.mini,win,['fsr_raw']);
@@ -1188,6 +1409,7 @@ function renderLive(){
   $('penSub').textContent = S.samples.length ? t('pen_sub_n',{n:S.samples.length}) : t('pen_sub_none');
   updateCharts();
   if(S.page==='details') renderDetails();
+  if(S.page==='result' && S.result) renderFsrCompare();
 }
 function renderDetails(){
   var m=sessionMetrics();
@@ -1226,7 +1448,8 @@ function renderResult(){
     sym.className='rsym wait'; sym.textContent=proc?'◔':'◷';
     head.textContent = proc?t('res_proc_h'):t('res_wait_h');
     text.textContent = proc?t('res_proc_p'):t('res_wait_p');
-    votes.hidden=true; bar.hidden=true; sb.hidden=true; return;
+    votes.hidden=true; bar.hidden=true; sb.hidden=true;
+    $('cmpCard').hidden=true; $('demoNote').hidden=true; return;
   }
   var kind=resultKind(r.result);
   sym.className='rsym '+(kind==='normal'?'normal':kind==='positive'?'positive':'tie');
@@ -1234,6 +1457,9 @@ function renderResult(){
   head.textContent = kind==='normal'?t('res_normal_h'):kind==='positive'?t('res_pos_h'):t('res_tie_h');
   text.textContent = kind==='normal'?t('res_normal_p'):kind==='positive'?t('res_pos_p'):t('res_tie_p');
   votes.hidden=false; bar.hidden=false;
+  $('cmpCard').hidden=false; $('demoNote').hidden=false;
+  renderFsrCompare(); fillCmp(charts.cmp);
+  setTimeout(function(){ if(charts.cmp) charts.cmp.resize(); },30);
   $('vH').textContent=r.healthy_count; $('vP').textContent=r.parkinson_count; $('vT').textContent=r.sample_count;
   var tot=Math.max(1,r.healthy_count+r.parkinson_count);
   $('barH').style.width=(r.healthy_count/tot*100)+'%'; $('barP').style.width=(r.parkinson_count/tot*100)+'%';
@@ -1353,8 +1579,32 @@ function exportPatients(){
 /* =====================================================
    CHATBOT
    ===================================================== */
-var chat={open:false,msgs:[],busy:false,started:false};
-var CHIP_KEYS=['1','2','3','4','5'];
+var chat={open:false,msgs:[],busy:false,started:false,more:false};
+var CHIP_KEYS=['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20'];
+var CHIP_FIRST=5;
+/* keywords used to match a typed question to a built-in answer (works offline) */
+var FAQ_KW={
+ '1':['what is parkinson','define parkinson','explain parkinson','পারকিনসন রোগ কী','পারকিনসন কী','পার্কিনসন কী'],
+ '2':['symptom','early sign','warning sign','লক্ষণ'],
+ '3':['spiral','drawing test','আঁক','স্পাইরাল'],
+ '4':['how do i use','how to use','use this page','start the test','ব্যবহার','কীভাবে চালা'],
+ '5':['what do the results','result mean','meaning of','ফলাফলের মানে','রেজাল্ট','ফলাফল'],
+ '6':['cause','why do people get','why does one get','কারণ','কেন হয়'],
+ '7':['diagnos','how is it detected','blood test','নির্ণয়','ডায়াগনোসিস'],
+ '8':['treat','medicine','medication','drug','levodopa','therapy','চিকিৎসা','ওষুধ','থেরাপি'],
+ '9':['tremor','shaking','shake','কাঁপুনি','কম্পন','ট্রেমর'],
+ '10':['cure','curable','সারে','ভালো হয়','নিরাময়'],
+ '11':['hereditary','genetic','inherit','family history','বংশগত','জিন','বংশ'],
+ '12':['at what age','how old','age of onset','who gets','elderly','young onset','বয়স','কাদের'],
+ '13':['exercise','lifestyle','diet','yoga','physio','ব্যায়াম','খাবার','হাঁটা'],
+ '14':['see a doctor','when should i','worried','neurologist','ডাক্তার','বিশেষজ্ঞ'],
+ '15':['motion sensor','accelerometer','gyro','mpu','why sensor','সেন্সর'],
+ '16':['fsr','pressure','thumb','চাপ'],
+ '17':['accura','reliab','trust','precision','নির্ভুল','নির্ভর','সঠিক'],
+ '18':['can this diagnose','diagnose me','medical diagnosis','রোগ নির্ণয় করতে পারে'],
+ '19':['offline','not connected','pen not','pen is off','অফলাইন','পেন বন্ধ'],
+ '20':['reset','রিসেট']
+};
 function chatFmt(text){
   return esc(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/^\s*[-*•]\s+/gm,'• ').replace(/\n/g,'<br>');
 }
@@ -1363,7 +1613,15 @@ function addMsg(kind,text,extra){
   $('msgs').appendChild(el); $('msgs').scrollTop=$('msgs').scrollHeight; return el;
 }
 function renderChips(){
-  $('chips').innerHTML=CHIP_KEYS.map(function(k){ return '<button type="button" data-q="'+k+'">'+esc(t('q'+k))+'</button>'; }).join('');
+  var keys = chat.more ? CHIP_KEYS : CHIP_KEYS.slice(0,CHIP_FIRST);
+  $('chips').innerHTML=keys.map(function(k){ return '<button type="button" data-q="'+k+'">'+esc(t('q'+k))+'</button>'; }).join('')
+    +'<button type="button" class="more" data-more="1">'+esc(t(chat.more?'chat_less':'chat_more'))+'</button>';
+}
+function askChip(k){
+  if(chat.busy) return;
+  var q=t('q'+k), a=t('a'+k);
+  addMsg('me',q); chat.msgs.push({role:'user',text:q});
+  addMsg('bot',a); chat.msgs.push({role:'model',text:a});
 }
 function renderChatStatic(){
   renderChips();
@@ -1384,7 +1642,12 @@ function chatRequest(payload,i){
 }
 function localAnswerFor(text){
   for(var i=0;i<CHIP_KEYS.length;i++){ var k=CHIP_KEYS[i]; if(I18N.en['q'+k]===text||I18N.bn['q'+k]===text) return t('a'+k); }
-  return null;
+  var low=String(text||'').toLowerCase(), best=null, bestScore=0;
+  CHIP_KEYS.forEach(function(k){
+    var score=0; (FAQ_KW[k]||[]).forEach(function(w){ if(low.indexOf(w)!==-1) score+=w.length; });
+    if(score>bestScore){ bestScore=score; best=k; }
+  });
+  return best ? t('a'+best) : null;
 }
 function sendChat(text){
   text=(text||'').trim(); if(!text||chat.busy) return;
@@ -1398,14 +1661,16 @@ function sendChat(text){
     if(res.status===200 && d.reply){
       addMsg('bot',d.reply,d.offTopic?'off':''); chat.msgs.push({role:'model',text:d.reply}); return;
     }
-    failChat(text,d.error,res.status);
+    failChat(text,d.error,res.status,d.detail);
   },function(){ typingOff(); failChat(text,'network',0); }).then(function(){ chat.busy=false; $('chatSend').disabled=false; });
 }
-function failChat(text,code,status){
+function failChat(text,code,status,detail){
+  var key = code==='quota'||(status===429&&code!=='rate_limited') ? 'chat_err_quota' : code==='not_configured' ? 'chat_err_conf' : code==='bad_key' ? 'chat_err_key' : code==='rate_limited' ? 'chat_err_rate' : 'chat_err_generic';
+  var reason = t(key) + (detail ? ' [' + detail + ']' : '');
   var local=localAnswerFor(text);
-  if(local){ addMsg('bot',local); chat.msgs.push({role:'model',text:local}); addMsg('sys',t('chat_offline_note')); return; }
-  var key = code==='quota'||status===429&&code!=='rate_limited' ? 'chat_err_quota' : code==='not_configured' ? 'chat_err_conf' : code==='rate_limited' ? 'chat_err_rate' : 'chat_err_generic';
-  addMsg('sys',t(key));
+  if(local){ addMsg('bot',local); chat.msgs.push({role:'model',text:local}); addMsg('sys',t('chat_offline_note')+' — '+reason); return; }
+  addMsg('sys',reason);
+  addMsg('sys',t('chat_try')); chat.more=true; renderChips();
 }
 function toggleChat(open){
   chat.open = open==null ? !chat.open : open;
@@ -1474,7 +1739,10 @@ function init(){
   $('chatFab').onclick=function(){ toggleChat(); };
   $('chatClose').onclick=function(){ toggleChat(false); };
   $('chatForm').addEventListener('submit',function(e){ e.preventDefault(); sendChat($('chatInput').value); });
-  $('chips').addEventListener('click',function(e){ var b=e.target.closest('button[data-q]'); if(b) sendChat(t('q'+b.getAttribute('data-q'))); });
+  $('chips').addEventListener('click',function(e){
+    var m=e.target.closest('button[data-more]'); if(m){ chat.more=!chat.more; renderChips(); return; }
+    var b=e.target.closest('button[data-q]'); if(b) askChip(b.getAttribute('data-q'));
+  });
 
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ document.documentElement.classList.remove('drawer'); } });
 
